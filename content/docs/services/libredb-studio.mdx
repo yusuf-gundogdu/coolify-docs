@@ -1,0 +1,45 @@
+---
+title: "LibreDB Studio"
+description: "Open-source database IDE you use from a browser, with twenty-seven engines including PostgreSQL, MySQL, Oracle, SQL Server, MongoDB and Redis."
+og:
+  description: "LibreDB Studio is an MIT-licensed database IDE you run on your own server and use from a browser, reaching fifty-four named engines through twenty-seven drivers."
+category: "Database"
+icon: "/docs/images/services/libredb-studio-logo.svg"
+---
+
+# LibreDB Studio
+
+<ZoomImage src="/docs/images/services/libredb-studio-logo.svg" alt="LibreDB Studio logo" />
+
+## What is LibreDB Studio?
+
+**LibreDB Studio** is an MIT-licensed database IDE you run on your own server and use from a browser. Nothing is installed on anyone's laptop, and the database never has to be reachable from the internet.
+
+It ships twenty-seven engine drivers of its own, and another twenty-seven engines speak one of the same wire protocols and connect through those drivers, so fifty-four named engines are reachable in all. It runs as a single container and keeps its own data in SQLite on a volume, so there is no external database to run just to use it.
+
+## Features
+
+- Twenty-seven engine drivers, among them PostgreSQL, MySQL, Oracle, Db2 LUW, SQL Server, SQLite, DuckDB, MongoDB, Redis, Couchbase, ClickHouse, Apache Cassandra and Trino, plus read-only browsing of Elasticsearch, Neo4j and Apache Kafka
+- A schema browser and query history on all of them, ER diagrams on the eight that declare foreign keys, and an EXPLAIN panel on ten of them: PostgreSQL, MySQL, SQLite, libSQL, DuckDB, ClickHouse, Druid, Trino, Couchbase and Databend
+- Columns the app reads as personal data are masked in the results grid until you unmask them
+- SSO (OIDC) and role based access control, with no paid tier
+- An optional AI assistant that works with Gemini, OpenAI, a local Ollama model or any OpenAI compatible endpoint, and stays off unless you configure one
+- Saved connections and query history persisted in SQLite on a Docker volume
+
+## First login
+
+Open the generated service URL and sign in as `admin@libredb.org` with the `SERVICE_PASSWORD_ADMIN` value Coolify generated. A second, non-admin account is created as `user@libredb.org` with `SERVICE_PASSWORD_USER`. It can run statements, but it cannot reach the admin pages, the maintenance operations or server-side files, and it cannot unmask a masked column. Both values are on the service's Environment Variables tab.
+
+Those two variables seed the accounts once, while the app's own store is still empty. Changing either of them afterwards leaves the stored password in place and the old one keeps working. To replace the admin password, set the new `ADMIN_PASSWORD`, add `ADMIN_PASSWORD_RESET=true`, redeploy, sign in to confirm it took, then remove the flag. The reset rebuilds the account from the environment: it removes any passkeys enrolled on it, sets the second factor from `ADMIN_TOTP_SECRET` or removes it when that is unset, re-enables a disabled account, and signs out every open session. `USER_PASSWORD` has no equivalent, and changing it logs nothing at all, so a rotation that silently does not take looks the same as a typo: change that account from the app's own Admin, Accounts screen instead.
+
+## Reaching it over plain HTTP
+
+The template sets `AUTH_COOKIE_SECURE=false`. Without a wildcard domain Coolify gives the service an sslip.io address with no certificate in front, and the app marks its session cookie `Secure` for any non-loopback host, so over plain HTTP the browser drops the cookie and sign-in returns you to the login page while the container stays healthy.
+
+Set `AUTH_COOKIE_SECURE=true` once HTTPS is in front of it. Setting it to `true` while still on plain HTTP fails the same silent way, with HTTP 200 on login and an endless bounce back to the login page. While it is `false` the session cookie travels in cleartext, so keep the deployment on a trusted network until then.
+
+## Links
+
+- [Official website](https://libredb.org?utm_source=coolify.io)
+- [GitHub](https://github.com/libredb/libredb-studio?utm_source=coolify.io)
+- [Documentation](https://github.com/libredb/libredb-studio?utm_source=coolify.io#readme)
